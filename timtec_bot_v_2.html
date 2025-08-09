@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimTec Catalog Assistant v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    #chat-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat-box::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-2xl h-[80vh] bg-white rounded-2xl shadow-lg flex flex-col">
+    <header class="bg-blue-600 text-white px-6 py-4 rounded-t-2xl">
+      <h1 class="text-xl font-semibold">TimTec Product Chatbot</h1>
+      <p class="text-sm">Search using TimTec ID, IUPAC, or SMILES</p>
+    </header>
+    <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+    <footer class="p-4 border-t flex">
+      <input id="query" class="flex-1 border rounded-full px-4 py-2" placeholder="Enter query...">
+      <button id="search" class="ml-3 px-4 py-2 bg-blue-600 text-white rounded-full">Search</button>
+    </footer>
+  </div>
+
+  <script>
+    const catalog = JSON.parse(`REPLACE_ME_WITH_JSON`);
+
+    const priceMatrix = [
+      { range: [201, 1000], prices: [30, 40, 50, 80, 150, 220, 250, 280] },
+      { range: [101, 200], prices: [30, 60, 80, 100, 200, 300, 350, 400] },
+      { range: [51, 100],  prices: [70, 90, 140, 180, 280, 350, 390, 440] },
+      { range: [21, 50],   prices: [80, 100, 150, 200, 290, 360, 400, 480] },
+      { range: [6, 20],    prices: [90, 110, 160, 260, 320, 450, 500, null] },
+      { range: [1, 5],     prices: [100, 120, 180, 290, null, null, null, null] }
+    ];
+
+    const doseMap = ['1mg', '2mg', '5mg', '10mg', '15mg', '20mg', '30mg', '50mg'];
+
+    const fallbackPrice = (dose, amount) => {
+      const amt = parseFloat(amount);
+      const row = priceMatrix.find(r => amt >= r.range[0] && amt <= r.range[1]);
+      if (!row) return null;
+      const idx = doseMap.indexOf(dose);
+      return row.prices[idx] !== null ? `$${row.prices[idx]}` : 'Request';
+    };
+
+    function displayMessage(sender, text) {
+      const div = document.createElement('div');
+      div.className = sender === 'bot' ? 'text-left' : 'text-right';
+      div.innerHTML = `<div class="inline-block bg-${sender === 'bot' ? 'gray' : 'blue'}-100 text-${sender === 'bot' ? 'black' : 'blue'}-800 px-4 py-2 rounded-xl">${text}</div>`;
+      document.getElementById('chat-box').appendChild(div);
+      div.scrollIntoView();
+    }
+
+    function formatResult(product) {
+      let pricing = '';
+      doseMap.forEach(dose => {
+        const raw = product[`Price_${dose}`];
+        const price = (!raw || String(raw).toLowerCase().includes('request')) ? fallbackPrice(dose, product.Amount) : `$${raw}`;
+        if (price) pricing += `<li>${dose}: <strong>${price}</strong></li>`;
+      });
+
+      return `
+        <strong>${product.TimTec_ID}</strong><br>
+        <em>${product.IUPAC}</em><br>
+        <ul class='list-disc ml-6'>${pricing}</ul>
+        <p>In Stock: <strong>${product.InStock_Tampa}</strong></p>
+        <p>Purity: <strong>${product.Purity}</strong>, MW: ${product.MolecularWeight}</p>
+      `;
+    }
+
+    document.getElementById('search').onclick = () => {
+      const input = document.getElementById('query');
+      const q = input.value.trim().toLowerCase();
+      if (!q) return;
+      displayMessage('user', input.value);
+      input.value = '';
+      const result = catalog.find(p => 
+        p.TimTec_ID?.toLowerCase() === q ||
+        p.SMILES?.toLowerCase() === q ||
+        p.IUPAC?.toLowerCase().includes(q)
+      );
+      if (result) displayMessage('bot', formatResult(result));
+      else displayMessage('bot', `No match for "${q}".`);
+    };
+  </script>
+</body>
+</html>
