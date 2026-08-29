@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: timtec-catalog-bot
+    runtime: static
+    buildCommand: git lfs pull
+    staticPublishPath: .
