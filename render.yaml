@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: timtec-catalog-bot
+    runtime: static
+    buildCommand: git lfs pull
+    staticPublishPath: .
+    headers:
+      - path: /catalog/*
+        name: Cache-Control
+        value: public, max-age=86400
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+      - path: /
+        name: Cache-Control
+        value: no-cache
