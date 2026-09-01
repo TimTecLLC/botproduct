@@ -1,0 +1,42 @@
+{
+  "source_site_url": "https://www.timtec.net",
+  "wordpress_site_url": "https://staging.timtec.net",
+  "plugin": "FG Joomla to WordPress",
+  "plugin_url": "https://wordpress.org/plugins/fg-joomla-to-wordpress/",
+  "recommended_premium_features": [
+    "user migration with passwords",
+    "menu migration",
+    "SEO meta migration",
+    "Joomla URL redirects"
+  ],
+  "joomla_database": {
+    "hostname": "FILL_FROM_configuration.php",
+    "port": 3306,
+    "database": "FILL_FROM_configuration.php",
+    "username": "FILL_FROM_configuration.php",
+    "password": "FILL_FROM_configuration.php",
+    "table_prefix": "FILL_FROM_configuration.php"
+  },
+  "import_options": {
+    "import_media": true,
+    "import_categories": true,
+    "import_tags": true,
+    "modify_internal_links": true,
+    "articles_as": "pages",
+    "skip_trashed": true
+  },
+  "wordpress_settings_after_import": {
+    "permalink_structure": "/%postname%/",
+    "redirect_plugin": "Redirection",
+    "redirect_csv": "output/redirects.csv"
+  },
+  "custom_features_to_rebuild": [
+    "Chemical structure search",
+    "Compound / SMILES / TimTec ID search (embed botproduct catalog bot)",
+    "Registered user database access area"
+  ],
+  "backup_source": {
+    "drive_file": "site-www.timtec.net-20260829-220910.zip",
+    "drive_file_id": "1GimGMtrfljZTroIOvcOsiMPFfSNbleI-"
+  }
+}

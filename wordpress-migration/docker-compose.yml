@@ -1,0 +1,31 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: timtec_wp
+      MYSQL_USER: timtec
+      MYSQL_PASSWORD: timtec
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - wp_db:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:6.8-php8.2-apache
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: timtec
+      WORDPRESS_DB_PASSWORD: timtec
+      WORDPRESS_DB_NAME: timtec_wp
+    volumes:
+      - wp_html:/var/www/html
+      - ./output:/var/www/import:ro
+    depends_on:
+      - db
+
+volumes:
+  wp_db:
+  wp_html:
