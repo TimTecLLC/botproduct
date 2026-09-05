@@ -54,6 +54,31 @@
     let catalog = [];
     let catalogReady = false;
 
+    function stockRawValue(raw) {
+      return raw['In Stock Orlando, FL'] ??
+        raw['In Stock Tampa, FL'] ??
+        raw.InStock_Orlando ??
+        raw.InStock_Tampa;
+    }
+
+    // Customer copy is Yes/No only — never remaining-mg quantities.
+    function isInStock(value) {
+      if (value == null) return null;
+      const text = String(value).trim().toLowerCase();
+      if (!text) return null;
+      if (['yes', 'y', 'true', 'in stock'].includes(text)) return true;
+      if (['no', 'n', 'false', 'out of stock', 'unavailable'].includes(text)) return false;
+      const numeric = parseFloat(text.replace(/[^\d.-]/g, ''));
+      if (!Number.isNaN(numeric) && /\d/.test(text)) return numeric > 0;
+      return null;
+    }
+
+    function formatStockStatus(value) {
+      return isInStock(value) === true
+        ? 'In stock · Orlando, Florida'
+        : 'Check availability';
+    }
+
     function normalizeProduct(raw) {
       const amount = raw['Amount/mg'] ?? raw.Amount;
       return {
@@ -61,7 +86,7 @@
         SMILES: raw.SMILES,
         IUPAC: raw.IUPAC,
         Amount: amount,
-        InStock_Tampa: raw['In Stock Tampa, FL'] ?? raw.InStock_Tampa,
+        InStock: stockRawValue(raw),
         Purity: raw['Purity %'] ?? raw.Purity,
         MolecularWeight: raw['Molecular weight'] ?? raw.MolecularWeight,
         ...Object.fromEntries(doseMap.map(dose => [`Price_${dose}`, raw[`Price_${dose}`]]))
@@ -103,7 +128,7 @@
           <strong>${product.TimTec_ID}</strong><br>
           <em>${product.IUPAC || 'N/A'}</em><br>
           <ul class='list-disc ml-6 mt-2'>${pricing}</ul>
-          <p class="text-sm mt-2">In Stock (Tampa): <strong>${product.InStock_Tampa || 'Check Availability'}</strong></p>
+          <p class="text-sm mt-2">${formatStockStatus(product.InStock)}</p>
           <p class="text-sm">Purity: <strong>${product.Purity || 'N/A'}</strong>, MW: ${product.MolecularWeight || 'N/A'}</p>
         </div>
       `;

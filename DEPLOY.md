@@ -2,10 +2,19 @@
 
 This repo is a **fully static** site. There is no backend, no database, and no
 environment variables. The browser loads `index.html`, fetches
-`catalog/TimTec_CATALOG_SOURCE.json` (~82 MB, 105,466 products, stored with
+`catalog/TimTec_CATALOG_SOURCE.json` (~82 MB, **105,466** products, stored with
 Git LFS), normalizes the raw catalog keys in-page, and searches locally.
 
-Default data: **full catalog** at runtime via `fetch('./catalog/TimTec_CATALOG_SOURCE.json')`.
+Customer-facing stock copy is **Orlando, Florida** (Kissimmee/Orlando area
+ops). The page reads `In Stock Orlando, FL` or the legacy `In Stock Tampa, FL`
+key and shows only **In stock · Orlando, Florida** or **Check availability** —
+never remaining-mg quantities.
+
+Default data: `fetch('./catalog/TimTec_CATALOG_SOURCE.json')`. The live JSON is
+a **partial** export (mostly A01). Full Helix `catalog.db` coverage is
+**A01 131,037 + A02 63,324 = 194,361**. A follow-up will replace
+`catalog/TimTec_CATALOG_SOURCE.json` with that A01+A02 export. Do not invent
+rows in this file.
 
 ## 1. One-time Git LFS setup (required)
 
@@ -129,11 +138,25 @@ python3 -m http.server 3000 --bind 0.0.0.0 --directory .
 # open http://localhost:3000
 ```
 
-## 4. Lighter-data alternative (optional)
+## 4. Catalog coverage (A01 + A02)
 
-The default deliverable is the **full** 105,466-product catalog. An 82 MB
-JSON parsed in the browser is heavy (memory, first-paint, free-tier
-bandwidth). These options keep the same `index.html` and search behavior.
+| Source | Count |
+|---|---|
+| Live `catalog/TimTec_CATALOG_SOURCE.json` | **105,466** (partial; overlaps mostly A01) |
+| Helix `catalog.db` A01 | 131,037 |
+| Helix `catalog.db` A02 | 63,324 |
+| Full A01 + A02 | **194,361** |
+
+Most A02 compounds are missing from the live JSON. Rebuild from Helix
+`catalog.db` in a follow-up; this repo does not currently contain that
+database. Expected export path after rebuild:
+`catalog/TimTec_CATALOG_SOURCE.json`.
+
+## 5. Lighter-data alternative (optional)
+
+The current live file is **105,466** products (partial). An 82 MB JSON
+parsed in the browser is heavy (memory, first-paint, free-tier bandwidth).
+These options keep the same `index.html` and search behavior.
 
 | Approach | How | Typical size | Trade-off |
 |---|---|---|---|
@@ -149,7 +172,7 @@ small client change to pick a shard before search. That is **not** the
 default; use compact or `--limit` unless you are ready to change
 `index.html`.
 
-## 5. What you do not need
+## 6. What you do not need
 
 - No server, Docker, or runtime besides a static file host
 - No API keys or Render environment variables

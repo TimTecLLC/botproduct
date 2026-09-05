@@ -2,14 +2,19 @@
 """Prepare catalog/TimTec_CATALOG_SOURCE.json for the static chatbot.
 
 The page fetches this file at runtime and normalizes raw keys in the browser.
-Default output is the FULL catalog (all products). Optional flags produce a
+Default output is every product in --source. Optional flags produce a
 lighter file for local preview or constrained hosts.
 
+The live Git LFS file (105,466 products) is a partial A01-heavy export.
+Full Helix catalog.db coverage is A01 131,037 + A02 63,324 = 194,361.
+Pass that combined export as --source when it is available; this script
+does not invent rows.
+
 Examples:
-  # Full catalog (copy as-is)
+  # Copy a source catalog as-is
   python3 scripts/prepare_catalog.py --source /path/to/TimTec_CATALOG_SOURCE.json
 
-  # Full catalog, compacted (~22% smaller, same 105,466 products)
+  # Compact JSON (same products, smaller file)
   python3 scripts/prepare_catalog.py --source /path/to/TimTec_CATALOG_SOURCE.json --compact
 
   # Curated subset for a lighter deploy

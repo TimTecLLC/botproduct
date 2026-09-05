@@ -61,6 +61,16 @@
       div.scrollIntoView();
     }
 
+    function formatStockStatus(product) {
+      const raw = product['In Stock Orlando, FL'] ?? product['In Stock Tampa, FL'] ?? product.InStock_Orlando ?? product.InStock_Tampa;
+      const text = raw == null ? '' : String(raw).trim().toLowerCase();
+      if (['yes', 'y', 'true', 'in stock'].includes(text)) return 'In stock · Orlando, Florida';
+      if (['no', 'n', 'false', 'out of stock', 'unavailable', ''].includes(text)) return 'Check availability';
+      const numeric = parseFloat(String(raw).replace(/[^\d.-]/g, ''));
+      if (!Number.isNaN(numeric) && /\d/.test(String(raw)) && numeric > 0) return 'In stock · Orlando, Florida';
+      return 'Check availability';
+    }
+
     function formatResult(product) {
       let pricing = '';
       doseMap.forEach(dose => {
@@ -73,7 +83,7 @@
         <strong>${product.TimTec_ID}</strong><br>
         <em>${product.IUPAC}</em><br>
         <ul class='list-disc ml-6'>${pricing}</ul>
-        <p>In Stock: <strong>${product.InStock_Tampa}</strong></p>
+        <p>${formatStockStatus(product)}</p>
         <p>Purity: <strong>${product.Purity}</strong>, MW: ${product.MolecularWeight}</p>
       `;
     }
