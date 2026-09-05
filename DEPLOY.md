@@ -61,8 +61,14 @@ git lfs ls-files
 
 ## 2. Deploy on Render (static site)
 
-The site is static: Render only needs to publish the repo root after pulling
-LFS objects. No Node/Python build, no env vars.
+The site is static: Render only needs to publish the repo root after the
+catalog JSON is in place. No Node/Python build, no env vars.
+
+Render static builders do **not** have Git LFS, so the Blueprint
+`buildCommand` does **not** run `git lfs pull`. It curls the public GitHub
+media URL for `catalog/TimTec_CATALOG_SOURCE.json` instead (the same
+command already used by the live service). The LFS-tracked catalog file
+stays in the repo for local clones.
 
 ### Option A — Blueprint (`render.yaml`)
 
@@ -72,7 +78,9 @@ LFS objects. No Node/Python build, no env vars.
 4. Render reads `render.yaml` and creates a static site named
    `timtec-catalog-bot` with:
    - **Runtime:** static
-   - **Build command:** `git lfs pull`
+   - **Build command:** curl the public GitHub media URL for
+     `catalog/TimTec_CATALOG_SOURCE.json` (see `render.yaml`; Render
+     static has no `git-lfs`)
    - **Publish directory:** `.` (repo root)
 5. Click **Apply**. When the deploy finishes, open the
    `https://<service>.onrender.com` URL Render assigns.
@@ -83,7 +91,9 @@ LFS objects. No Node/Python build, no env vars.
 2. Connect `github.com/TimTecLLC/botproduct`.
 3. Set:
    - **Branch:** `cursor/grok-deploy-ready-75a2` (or `main` after merge)
-   - **Build Command:** `git lfs pull`
+   - **Build Command:** the `buildCommand` from `render.yaml` (curl the
+     public GitHub media URL; do not use `git lfs pull` — Render static
+     has no Git LFS)
    - **Publish Directory:** `.`
 4. Leave environment variables empty.
 5. Create the site and wait for the first deploy.
@@ -104,10 +114,10 @@ LFS objects. No Node/Python build, no env vars.
   download into the browser.
 - Free bandwidth is limited. Serving an 82 MB JSON on every cold visit adds
   up. Use the lighter-data alternative below if that becomes a problem.
-- Render must be allowed to pull Git LFS from GitHub. If the deploy log
-  shows a 130-byte pointer instead of the real JSON, confirm LFS is enabled
-  on the GitHub repo (**Settings → Git LFS**) and that the build command is
-  exactly `git lfs pull`.
+- Render static has no Git LFS. If the deploy log shows a 130-byte pointer
+  instead of the real JSON, confirm the build command curls
+  `https://media.githubusercontent.com/media/TimTecLLC/botproduct/main/catalog/TimTec_CATALOG_SOURCE.json`
+  (as in `render.yaml`) and that the file is a non-empty JSON payload.
 - Do not add a catch-all rewrite of `/*` → `/index.html`. That would break
   the catalog `fetch`.
 
