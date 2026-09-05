@@ -2,9 +2,12 @@ services:
   - type: web
     name: timtec-catalog-bot
     runtime: static
-    buildCommand: git lfs pull
+    buildCommand: mkdir -p catalog && curl -fsSL -o catalog/TimTec_CATALOG_SOURCE.json "https://media.githubusercontent.com/media/TimTecLLC/botproduct/main/catalog/TimTec_CATALOG_SOURCE.json" && test -s catalog/TimTec_CATALOG_SOURCE.json && ls -lh catalog/TimTec_CATALOG_SOURCE.json
     staticPublishPath: .
     headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: frame-ancestors *
       - path: /catalog/*
         name: Cache-Control
         value: public, max-age=86400
