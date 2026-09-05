@@ -126,7 +126,7 @@
         catalogReady = true;
         setSearchEnabled(true);
         document.getElementById('chat-box').innerHTML = '';
-        displayMessage('bot', `Catalog loaded (${catalog.length.toLocaleString()} products, A01 + A02). How can I help you find a product today?`);
+        displayMessage('bot', `Catalog loaded (${catalog.length.toLocaleString()} products, A01 + A02 in-stock). How can I help you find a product today?`);
       } catch (error) {
         document.getElementById('chat-box').innerHTML = '';
         displayMessage('bot', `Failed to load catalog: ${error.message}. Please refresh the page or contact support.`);

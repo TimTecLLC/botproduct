@@ -1,6 +1,6 @@
 # Deploy the TimTec Product Chatbot
 
-Customer-facing stock label is **Orlando, Florida** (not Tampa). Public catalog JSON is **A01 + A02 only** (~194k products from Helix `catalog.db`); remaining milligrams are not included in the public file.
+Customer-facing stock label is **Orlando, Florida** (not Tampa). Public catalog JSON is **A01 + A02 only** (A01 (all) + A02 in-stock only (~28.3k; not the larger A02 ID-duplicate dump) from Helix `catalog.db`); remaining milligrams are not included in the public file.
 
 
 This repo is a **fully static** site. There is no backend, no database, and no
