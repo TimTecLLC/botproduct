@@ -10,7 +10,7 @@ services:
         value: frame-ancestors *
       - path: /catalog/*
         name: Cache-Control
-        value: public, max-age=86400
+        value: public, max-age=300, must-revalidate
       - path: /index.html
         name: Cache-Control
         value: no-cache
