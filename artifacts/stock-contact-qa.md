@@ -29,6 +29,16 @@ CoA and SDS for ST091907 returned `application/pdf` from structure.timtec.org on
 
 `node --test tests/catalog.test.js` — 9 passed, including the full-file lookups above.
 
+Browser pass on a local static server, using the same page code and three real catalog rows (`ST091907`, `ST046822`, `ST4000116`):
+
+- Footer shows Suite 301, Kissimmee, Florida 34744, phone 302-292-8500, fax 302-292-8520, timtec@timtec.org, www.timtec.org.
+- `ST091907` is Library A01, `In stock (Orlando, Florida): Yes`, lead time about 1 business day, purity 90%. CoA href `https://structure.timtec.org/api/coa/pdf?id=ST091907`. SDS href `https://structure.timtec.org/api/msds/pdf?id=ST091907`.
+- `ST046822` is Library A02, `In stock (Orlando, Florida): No`.
+- `ST4000116` is Library A02, `In stock (Orlando, Florida): Yes`.
+- `MCL-5000` is described as a virtual collection and not a purchasable compound. No formula, price, or stock line.
+- At about 390px width the contact block and the Orlando Yes line for `ST091907` still fit.
+- The page did not show Tampa or timtec.net.
+
 ## Render redeploy
 
 Merge to `main`, then in the Render dashboard open **timtec-catalog-bot** and deploy the latest commit (or wait for auto-deploy). Hard-refresh `/`. The build command still downloads the catalog JSON from the `main` media URL; this change does not replace that file. Confirm the Kissimmee Suite 301 footer and an `ST091907` card whose CoA link opens `https://structure.timtec.org/api/coa/pdf?id=ST091907`.
