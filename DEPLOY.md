@@ -1,6 +1,15 @@
 # Deploy the TimTec Product Chatbot
 
-Customer-facing stock label is **Orlando, Florida** (not Tampa). Public catalog JSON is **A01 + A02 only** (full A01 + full A02 (~194k) from Helix `catalog.db` (some A02 IDs may be alternate identifiers for the same chemical)); remaining milligrams are not included in the public file.
+Customer-facing stock depends on the catalog `Library` code:
+
+- **A01 and A02:** `In stock (Orlando, Florida): Yes` or `No`, with lead time **about 1 business day**.
+- **A03** (and A04, the same extended bucket used by list search): **Extended overseas stock**, lead time **1-3 weeks**. These rows are not labeled Orlando, even if an older stock column says Yes.
+
+The public JSON is **A01 + A02 only** (full A01 + full A02, 194,361 products, from Helix `catalog.db`). It does not currently contain A03 rows. Remaining milligrams are not shown.
+
+Contact on the page is TimTec, LLC, 1950 East Irlo Bronson Memorial Highway, Suite 301, Kissimmee, Florida 34744, phone 302-292-8500, fax 302-292-8520, timtec@timtec.org, www.timtec.org. CoA and SDS links open `https://structure.timtec.org/api/coa/pdf?id=` and `https://structure.timtec.org/api/msds/pdf?id=`.
+
+MCL-5000 is a virtual collection and is not offered as a purchasable compound. The bot does not invent a structure or price for it.
 
 
 This repo is a **fully static** site. There is no backend, no database, and no
@@ -152,7 +161,23 @@ small client change to pick a shard before search. That is **not** the
 default; use compact or `--limit` unless you are ready to change
 `index.html`.
 
-## 5. What you do not need
+## 5. Redeploy the live Render site
+
+The live service is the static site **timtec-catalog-bot** at
+`https://timtec-catalog-bot.onrender.com/`. This repo’s `render.yaml` is what
+that service should track. HTML, CSS, and JS changes do not require a new
+catalog file. The build still downloads
+`catalog/TimTec_CATALOG_SOURCE.json` from the `main` branch media URL, so
+merge to `main` before the deploy if you want the build to keep finding that
+file.
+
+1. Merge the pull request into `main`.
+2. In the [Render dashboard](https://dashboard.render.com), open **timtec-catalog-bot**.
+3. If auto-deploy is on for `main`, wait for the deploy that the merge starts. Otherwise choose **Manual Deploy** → **Deploy latest commit**.
+4. When the deploy is live, hard-refresh `/`. `index.html` and `/` are sent with `Cache-Control: no-cache`. Confirm the footer is Suite 301, Kissimmee, then search `ST091907` (A01, Orlando Yes, about 1 business day) and open its CoA PDF link.
+5. Do not add a catch-all rewrite of `/*` to `/index.html`. That would break `/catalog/...`. CoA and SDS PDFs stay on `structure.timtec.org`.
+
+## 6. What you do not need
 
 - No server, Docker, or runtime besides a static file host
 - No API keys or Render environment variables
