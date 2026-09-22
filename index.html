@@ -3,141 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TimTec Catalog Assistant v2</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: sans-serif; }
-    #chat-box::-webkit-scrollbar { width: 6px; }
-    #chat-box::-webkit-scrollbar-thumb { background: #ccc; border-radius: 6px; }
-    .chat-bubble { max-width: 80%; }
-  </style>
+  <title>TimTec Catalog Assistant</title>
+  <link rel="stylesheet" href="bot.css">
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="w-full max-w-2xl h-[80vh] bg-white rounded-2xl shadow-lg flex flex-col">
-    <header class="bg-blue-600 text-white px-6 py-4 rounded-t-2xl">
-      <h1 class="text-xl font-semibold">TimTec Product Chatbot</h1>
-      <p class="text-sm">Search A01 / A02 by TimTec ID, IUPAC, or SMILES</p>
+<body>
+  <div class="app">
+    <header>
+      <h1>TimTec catalog assistant</h1>
+      <p>Search by TimTec ID, IUPAC, or SMILES. A01 and A02 are Orlando stock (Yes or No, about 1 business day). A03 is extended overseas stock.</p>
     </header>
-    <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4">
-      <div class="text-left">
-        <div class="inline-block bg-gray-100 text-black px-4 py-2 rounded-xl chat-bubble">
-          Welcome! Loading product catalog...
-        </div>
-      </div>
+    <div id="chat-box" aria-live="polite">
+      <div class="row bot"><div class="bubble">Loading the product catalog…</div></div>
     </div>
-    <footer class="p-4 border-t flex">
-      <input id="query" class="flex-1 border rounded-full px-4 py-2" placeholder="Enter query..." disabled>
-      <button id="search" class="ml-3 px-4 py-2 bg-blue-600 text-white rounded-full disabled:opacity-50" disabled>Search</button>
-    </footer>
+    <form id="composer">
+      <label class="sr-only" for="query">Search</label>
+      <input id="query" name="query" autocomplete="off" placeholder="TimTec ID, IUPAC, or SMILES" disabled>
+      <button id="search" type="submit" disabled>Search</button>
+    </form>
+    <address id="contact"></address>
   </div>
-
-  <script>
-    const doseMap = ['1mg', '2mg', '5mg', '10mg', '15mg', '20mg', '30mg', '50mg'];
-    let catalog = [];
-    let catalogReady = false;
-
-    function normalizeProduct(raw) {
-      const orlando =
-        raw['In Stock Orlando, FL'] ??
-        raw.InStock_Orlando ??
-        raw['In Stock Tampa, FL'] ??
-        raw.InStock_Tampa;
-      return {
-        TimTec_ID: raw.TimTec_ID,
-        SMILES: raw.SMILES,
-        IUPAC: raw.IUPAC,
-        Library: raw.Library || raw.library || '',
-        InStock_Orlando: orlando,
-        Purity: raw['Purity %'] ?? raw.Purity,
-        MolecularWeight: raw['Molecular weight'] ?? raw.MolecularWeight,
-        ...Object.fromEntries(doseMap.map(dose => [`Price_${dose}`, raw[`Price_${dose}`]]))
-      };
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
     }
-
-    function displayPrice(raw) {
-      if (!raw || String(raw).trim() === '') return 'Request';
-      const s = String(raw);
-      if (s.toLowerCase().includes('request') || isNaN(parseFloat(s))) return 'Request';
-      return `$${s}`;
-    }
-
-    function displayMessage(sender, text) {
-      const chatBox = document.getElementById('chat-box');
-      const div = document.createElement('div');
-      div.className = sender === 'bot' ? 'text-left' : 'text-right';
-      div.innerHTML = `<div class="inline-block bg-${sender === 'bot' ? 'gray' : 'blue'}-100 text-black px-4 py-2 rounded-xl chat-bubble">${text}</div>`;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function formatResult(product) {
-      let pricing = '';
-      doseMap.forEach(dose => {
-        pricing += `<li class="text-sm">${dose}: <strong>${displayPrice(product[`Price_${dose}`])}</strong></li>`;
-      });
-      const stock = product.InStock_Orlando || 'Check Availability';
-      const lib = product.Library ? ` · ${product.Library}` : '';
-      return `
-        <div class="border-b pb-2 mb-2">
-          <strong>${product.TimTec_ID}</strong>${lib}<br>
-          <em>${product.IUPAC || 'N/A'}</em><br>
-          <ul class='list-disc ml-6 mt-2'>${pricing}</ul>
-          <p class="text-sm mt-2">In stock (Orlando, Florida): <strong>${stock}</strong></p>
-          <p class="text-sm">Purity: <strong>${product.Purity || 'N/A'}</strong>, MW: ${product.MolecularWeight || 'N/A'}</p>
-        </div>
-      `;
-    }
-
-    function performSearch() {
-      if (!catalogReady) {
-        displayMessage('bot', 'Catalog is still loading. Please wait a moment and try again.');
-        return;
-      }
-      const input = document.getElementById('query');
-      const q = input.value.trim().toLowerCase();
-      if (!q) return;
-      displayMessage('user', input.value);
-      input.value = '';
-      const results = catalog.filter(p =>
-        (p.TimTec_ID && p.TimTec_ID.toLowerCase() === q) ||
-        (p.SMILES && p.SMILES.toLowerCase() === q) ||
-        (p.IUPAC && p.IUPAC.toLowerCase().includes(q))
-      );
-      if (results.length > 0) {
-        let response = results.length > 1 ? `Found ${results.length} matching products:<br><br>` : '';
-        results.forEach(result => { response += formatResult(result); });
-        displayMessage('bot', response);
-      } else {
-        displayMessage('bot', `No products found matching "${q}". Please check the ID or try a different search term.`);
-      }
-    }
-
-    function setSearchEnabled(enabled) {
-      document.getElementById('query').disabled = !enabled;
-      document.getElementById('search').disabled = !enabled;
-    }
-
-    async function loadCatalog() {
-      try {
-        const response = await fetch('./catalog/TimTec_CATALOG_SOURCE.json?v=194361');
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const rawCatalog = await response.json();
-        catalog = rawCatalog.map(normalizeProduct);
-        catalogReady = true;
-        setSearchEnabled(true);
-        document.getElementById('chat-box').innerHTML = '';
-        displayMessage('bot', `Catalog loaded (${catalog.length.toLocaleString()} products, A01 + A02). How can I help you find a product today?`);
-      } catch (error) {
-        document.getElementById('chat-box').innerHTML = '';
-        displayMessage('bot', `Failed to load catalog: ${error.message}. Please refresh the page or contact support.`);
-      }
-    }
-
-    document.getElementById('search').onclick = performSearch;
-    document.getElementById('query').addEventListener('keyup', (event) => {
-      if (event.key === 'Enter') performSearch();
-    });
-    loadCatalog();
-  </script>
+  </style>
+  <script src="catalog.js"></script>
+  <script src="bot.js"></script>
 </body>
 </html>
